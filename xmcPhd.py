@@ -8,6 +8,7 @@ import time
 from threading import Thread
 from threading import Lock
 import time
+import configparser
 
 
 def getHTMLText(url):
@@ -151,12 +152,13 @@ def threadingUp(count, infoList, pages, url):
     for thread in threadList:
         thread.join()
 
-def getPageData(count):
-    url = 'https://muchong.com/f-430-'
-    other = '-typeid-2303'
-    file_path = './spiderInfo.txt'
-    if os.path.exists(file_path):
-        os.remove(file_path)
+def getPageData(config):
+    filePath = config.get('Process', 'filePath')
+    count = int(config.get('Process', 'count'))
+    url = config.get('Process', 'url')
+    other = config.get('Process', 'other')
+    if os.path.exists(filePath):
+        os.remove(filePath)
     for pageNum in range(0, count):
         fatherUrl = url + str(pageNum + 1) + other
         print(fatherUrl)
@@ -164,9 +166,13 @@ def getPageData(count):
 
     
 def main():
-    # 抓取的页面数量
-    count = 30
-    getPageData(count)
+    # 创建配置解析器对象
+    config = configparser.ConfigParser()
+
+    # 读取配置文件
+    config.read('conf.ini')
+
+    getPageData(config)
     start = time.time()
     # threadingUp(count, dataList, pages, url_)  # 多线程
     # getDataInfo(dataList,pages,url_) # 单线程
