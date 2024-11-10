@@ -36,7 +36,6 @@ def getSonLinks(url):
     获取当前需要爬取的所有子链接
     """
 
-    # print(url)
     html = getHTMLText(url)
     
     soup = BeautifulSoup(html, 'html.parser')
@@ -45,7 +44,7 @@ def getSonLinks(url):
     mustKeywords = ["北京"]
     
     # 黑名单关键词列表
-    blacklistKeywords = ["化学", "生物", "材料", "纳米", "化工", "蛋白质"]
+    blacklistKeywords = ["化学", "生物", "材料", "纳米", "化工", "蛋白质", "物理"]
 
     # 查找所有的<a>标签
     a_tags = soup.find_all('a')    
@@ -57,12 +56,13 @@ def getSonLinks(url):
     ]
     
     for target in matching_links:
-        if judgeValidLink(target):
-            with open("spiderInfo.txt", "a+", encoding="utf-8") as file:
-                # 写入字符串
-                target = "https://muchong.com" + target
-                file.write(target)
-                file.write("\n")
+        if judgeValidLink(target) == False:
+            continue
+        with open("spiderInfo.txt", "a+", encoding="utf-8") as file:
+            # 写入字符串
+            target = "https://muchong.com" + target
+            file.write(target)
+            file.write("\n")
 
     return 0, url
 
@@ -154,18 +154,18 @@ def threadingUp(count, infoList, pages, url):
 def getPageData(count):
     url = 'https://muchong.com/f-430-'
     other = '-typeid-2303'
-    os.remove("./spiderInfo.txt")
-    for pageNum in range(1, count):
-        fatherUrl = url + str(pageNum) + other
+    file_path = './spiderInfo.txt'
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    for pageNum in range(0, count):
+        fatherUrl = url + str(pageNum + 1) + other
         print(fatherUrl)
         getSonLinks(fatherUrl)
-        
-        
-        
+
     
 def main():
     # 抓取的页面数量
-    count = 31
+    count = 30
     getPageData(count)
     start = time.time()
     # threadingUp(count, dataList, pages, url_)  # 多线程
