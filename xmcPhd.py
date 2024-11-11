@@ -10,6 +10,12 @@ import configparser
 from concurrent.futures import ThreadPoolExecutor
 
 
+# 关键词列表
+mustKeywords = []
+    
+# 黑名单关键词列表
+blacklistKeywords = []
+
 def getHTMLText(url):
     """
     获取网页
@@ -30,6 +36,18 @@ def inValidLinkFilter(url):
         return True
     else:
         return False
+    
+def getSonTitle(url):
+    html = getHTMLText(url)
+    
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # 获取第一个<title>标签的内容
+    title_tag = soup.find('title')
+    
+    return title_tag.get_text()
+
+    
 
 def getSonLinks(url):
     """
@@ -39,12 +57,6 @@ def getSonLinks(url):
     html = getHTMLText(url)
     
     soup = BeautifulSoup(html, 'html.parser')
-    
-    # 关键词列表
-    mustKeywords = ["北京"]
-    
-    # 黑名单关键词列表
-    blacklistKeywords = ["化学", "生物", "材料", "纳米", "化工", "蛋白质", "物理"]
 
     # 查找所有的<a>标签
     a_tags = soup.find_all('a')    
@@ -61,8 +73,8 @@ def getSonLinks(url):
         with open("spiderInfo.txt", "a+", encoding="utf-8") as file:
             # 写入字符串
             target = "https://muchong.com" + target
-            file.write(target)
-            file.write("\n")
+            tmp = target + ' ' + getSonTitle(target) + '\n'
+            file.write(tmp)
 
     return 0, url
 
@@ -91,10 +103,16 @@ def main():
 
     # 读取配置文件
     config.read('conf.ini')
-    
+
+    # 使用 split() 按照逗号分隔
+    global mustKeywords
+    mustKeywords = config.get('KeyWords', 'mustKeywords').split(',')
+
+    global blacklistKeywords
+    blacklistKeywords = config.get('KeyWords', 'blacklistKeywords').split(',')
+
     fatherURLList = getPageData(config)
     start = time.time()
-    # create_threads(fatherURLList)  # 多线程
 
     maxPoolNum = int(config.get('Process', 'maxPoolNum'))
 
